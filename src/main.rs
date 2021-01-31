@@ -29,17 +29,14 @@ fn main() {
 
 fn handle_connection(mut stream: TcpStream) {
     let mut buffer = vec![0; 512 as usize];
-    while match stream.read(&mut buffer) {
-        Ok(0) => false,
+    match stream.read(&mut buffer) {
+        Ok(0) => return,
         Ok(n) => {
             // println!("{:?}", &buffer[..n][0]);
-            match &buffer[..n][0] {
-                14 => {
-                    println!("Initiliazing a new connection.")
-                }
+            return match &buffer[..n][0] {
+                14 => handle_login(stream),
                 _ => println!("Other stuff"),
-            }
-            true
+            };
         }
         Err(_) => {
             println!(
@@ -47,7 +44,22 @@ fn handle_connection(mut stream: TcpStream) {
                 stream.peer_addr().unwrap()
             );
             stream.shutdown(Shutdown::Both).unwrap();
-            false
         }
-    } {}
+    }
+    {}
+}
+
+fn handle_login(mut stream: TcpStream) {
+    let mut buffer = vec![0; 512 as usize];
+    match stream.read(&mut buffer) {
+        Ok(n) => println!("{:?}", &buffer[..n]),
+        Err(err) => {
+            println!("An error occurred", err);
+        }
+    }
+
+    for _ in 0..7 {
+        stream.write(&0_i8.to_le_bytes()).unwrap();
+    }
+    stream.write(&2_u32.to_le_bytes()).unwrap();
 }
