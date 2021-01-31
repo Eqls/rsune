@@ -54,7 +54,7 @@ fn handle_login(mut stream: TcpStream) {
     match stream.read(&mut buffer) {
         Ok(n) => println!("{:?}", &buffer[..n]),
         Err(err) => {
-            println!("An error occurred", err);
+            println!("An error occurred {}", err);
         }
     }
 
