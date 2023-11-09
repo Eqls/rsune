@@ -62,6 +62,7 @@ fn handle_login(mut stream: TcpStream) {
     out_buffer.append(&mut 2_u64.to_le_bytes().to_vec());
 
     stream.write(&out_buffer).unwrap();
+    out_buffer.clear();
 
     let mut buffer = vec![0; 512 as usize];
     let len = stream.read(&mut buffer).unwrap();
@@ -73,14 +74,8 @@ fn handle_login(mut stream: TcpStream) {
     println!("{:?}", username);
     let password = in_buffer.read_string().unwrap();
     println!("{:?}", password);
-    // for _ in 0..20 {
-    //     match stream.read_to_string(&mut buffer) {
-    //         Ok(n) => {
-    //             println!("{:?}", &buffer[..n])
-    //         }
-    //         Err(err) => {
-    //             println!("An error occurred {}", err);
-    //         }
-    //     }
-    // }
+
+    out_buffer.push(2);
+    out_buffer.append(&mut iter::repeat(0).take(2).collect::<Vec<u8>>());
+    stream.write(&out_buffer).unwrap();
 }
