@@ -69,9 +69,10 @@ fn handle_login(mut stream: TcpStream) {
     let mut in_buffer = Buffer::new(buffer[..len].to_vec());
 
     _ = in_buffer.read_bytes(64);
-    // let username = in_buffer.read_string().unwrap();
-    // println!("{:?}", username)
-
+    let username = in_buffer.read_string().unwrap();
+    println!("{:?}", username);
+    let password = in_buffer.read_string().unwrap();
+    println!("{:?}", password);
     // for _ in 0..20 {
     //     match stream.read_to_string(&mut buffer) {
     //         Ok(n) => {

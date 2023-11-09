@@ -45,10 +45,8 @@ impl Buffer {
 
         loop {
             match &self.read_byte().clone() {
-                Ok(0_u8) => break,
-                Ok(&n) => {
-                    bytes.push(n.clone())
-                },
+                Ok(10_u8) => break,
+                Ok(&n) => bytes.push(n.clone()),
                 Err(_) => break,
             }
         }
