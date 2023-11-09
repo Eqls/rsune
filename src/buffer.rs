@@ -50,7 +50,7 @@ impl Buffer {
                 Err(_) => break,
             }
         }
-        println!("{:?}", &bytes);
+
         return match String::from_utf8(bytes) {
             Ok(v) => Ok(v),
             Err(e) => Err("Cannot convert to string"),
