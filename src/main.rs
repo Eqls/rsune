@@ -2,6 +2,10 @@ use std::io::{Read, Write};
 use std::iter;
 use std::net::{Shutdown, TcpListener, TcpStream};
 
+mod buffer;
+
+use buffer::Buffer;
+
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:43594").unwrap();
     println!("Server listening on port 43594");
@@ -44,11 +48,9 @@ fn handle_connection(mut stream: TcpStream) {
             stream.shutdown(Shutdown::Both).unwrap();
         }
     }
-    {}
 }
 
 fn handle_login(mut stream: TcpStream) {
-    let mut buffer = vec![0; 512 as usize];
     let mut out_buffer = Vec::new();
 
     out_buffer.append(&mut iter::repeat(0).take(8).collect::<Vec<u8>>());
@@ -58,18 +60,26 @@ fn handle_login(mut stream: TcpStream) {
 
     // // server session key
     out_buffer.append(&mut 2_u64.to_le_bytes().to_vec());
-    println!("{:?}", out_buffer);
 
     stream.write(&out_buffer).unwrap();
 
-    for _ in 0..20 {
-        match stream.read(&mut buffer) {
-            Ok(n) => {
-                println!("{:?}", &buffer[..n])
-            }
-            Err(err) => {
-                println!("An error occurred {}", err);
-            }
-        }
-    }
+    let mut buffer = vec![0; 512 as usize];
+    let len = stream.read(&mut buffer).unwrap();
+
+    let mut in_buffer = Buffer::new(buffer[..len].to_vec());
+
+    _ = in_buffer.read_bytes(64);
+    // let username = in_buffer.read_string().unwrap();
+    // println!("{:?}", username)
+
+    // for _ in 0..20 {
+    //     match stream.read_to_string(&mut buffer) {
+    //         Ok(n) => {
+    //             println!("{:?}", &buffer[..n])
+    //         }
+    //         Err(err) => {
+    //             println!("An error occurred {}", err);
+    //         }
+    //     }
+    // }
 }
