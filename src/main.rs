@@ -2,9 +2,9 @@ use std::io::{Read, Write};
 use std::iter;
 use std::net::{Shutdown, TcpListener, TcpStream};
 
-mod buffer;
+mod read_buffer;
 
-use buffer::Buffer;
+use read_buffer::ReadBuffer;
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:43594").unwrap();
@@ -31,13 +31,35 @@ fn handle_connection(mut stream: TcpStream) {
     match stream.read(&mut buffer) {
         Ok(0) => return,
         Ok(n) => {
-            println!("{:?}", &buffer[..n][0]);
+            println!("{:?}", &buffer[..n]);
             return match &buffer[..n][0] {
                 14 => {
                     println!("{:?}", &buffer[..n]);
                     handle_login(stream)
                 }
-                _ => println!("Other stuff"),
+                15 => {
+                    let update_keys = [
+                        56, 79325, 55568, 46770, 24563, 299978, 44375, 0, 4176, 3589, 109125,
+                        604031, 176138, 292288, 350498, 686783, 18008, 20836, 16339, 1244, 8142,
+                        743, 119, 699632, 932831, 3931, 2974,
+                    ];
+                    let mut write_buffer = Vec::new();
+                    write_buffer.push(0_u8);
+                    for &key in update_keys.iter() {
+                        // write_buffer.append(key.clone().to_be_bytes())
+                        // let gg = ((key as u8) & 0xFF000000) >> 24;
+                        write_buffer.push((((key as u32) & 0xFF000000) >> 24) as u8);
+                        write_buffer.push((((key as u32) & 0x00FF0000) >> 16) as u8);
+                        write_buffer.push((((key as u32) & 0x0000FF00) >> 8) as u8);
+                        write_buffer.push(((key as u32) & 0x000000FF) as u8);
+                        // write_buffer.push(key.clone());
+                    }
+                    println!("{:02X?}", &write_buffer);
+                    println!("length: {}", &write_buffer.len());
+                    stream.write(&write_buffer).unwrap();
+                    write_buffer.clear();
+                }
+                n => println!("Other stuff {}", &n),
             };
         }
         Err(_) => {
@@ -67,7 +89,7 @@ fn handle_login(mut stream: TcpStream) {
     let mut buffer = vec![0; 512 as usize];
     let len = stream.read(&mut buffer).unwrap();
 
-    let mut in_buffer = Buffer::new(buffer[..len].to_vec());
+    let mut in_buffer = ReadBuffer::new(buffer[..len].to_vec());
 
     _ = in_buffer.read_bytes(64);
     let username = in_buffer.read_string().unwrap();
