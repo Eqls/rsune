@@ -1,10 +1,13 @@
-use bytes::{Buf, BytesMut};
+use bytes::Buf;
 
 pub trait RS2BufExt {
     fn get_string(&mut self) -> String;
 }
 
-impl RS2BufExt for BytesMut {
+impl<T> RS2BufExt for T
+where
+    T: Buf,
+{
     fn get_string(&mut self) -> String {
         let mut bytes = Vec::new();
 

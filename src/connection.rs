@@ -121,10 +121,10 @@ impl Connection {
                                 println!("UUID: {:?}", &uuid);
 
                                 let username = buf.get_string();
-                                println!("Username: {:?}", &string);
+                                println!("Username: {:?}", &username);
 
                                 let password = buf.get_string();
-                                println!("Password: {:?}", &pasword);
+                                println!("Password: {:?}", &password);
                             }
                         }
                     }
