@@ -1,22 +1,25 @@
+use std::io::Cursor;
 use std::{str, string::String};
 
 #[derive(Debug, Clone)]
 pub struct ReadBuffer {
-    buf: Vec<u8>,
+    inner: Vec<u8>,
     cursor: usize,
 }
 
 impl ReadBuffer {
-    pub fn new(buf: Vec<u8>) -> ReadBuffer {
-        ReadBuffer {
-            buf,
-            cursor: 0
-        }
+    #[must_use]
+    pub fn new(inner: Vec<u8>) -> ReadBuffer {
+        ReadBuffer { inner, cursor: 0 }
+    }
+
+    pub fn into_inner(self) -> Vec<u8> {
+        self.inner
     }
 
     pub fn read_byte(&mut self) -> Result<&u8, &str> {
-        if (&self.buf.len() - self.cursor) >= 1 {
-            let slice = &self.buf[self.cursor..self.cursor + 1];
+        if (&self.inner.len() - self.cursor) >= 1 {
+            let slice = &self.inner[self.cursor..self.cursor + 1];
 
             self.cursor += 1;
 
@@ -27,8 +30,8 @@ impl ReadBuffer {
     }
 
     pub fn read_bytes(&mut self, limit: usize) -> Result<&[u8], &str> {
-        if (&self.buf.len() - self.cursor) >= limit {
-            let slice = &self.buf[self.cursor..self.cursor + limit];
+        if (&self.inner.len() - self.cursor) >= limit {
+            let slice = &self.inner[self.cursor..self.cursor + limit];
 
             self.cursor += limit;
 
@@ -53,5 +56,9 @@ impl ReadBuffer {
             Ok(v) => Ok(v),
             Err(e) => Err("Cannot convert to string"),
         };
+    }
+
+    pub fn read_int(&mut self) -> u32 {
+        return u32::from_be_bytes(self.inner[self.cursor..4 + self.cursor].try_into().unwrap());
     }
 }
